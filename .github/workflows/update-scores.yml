@@ -1,8 +1,11 @@
 name: Update scores
 
 on:
+  # Midnight Mountain time. GitHub cron is UTC, so run at both 06:00 (MDT) and
+  # 07:00 (MST) and let the time check below skip whichever one isn't midnight.
   schedule:
-    - cron: "*/15 * * * *"
+    - cron: "0 6 * * *"
+    - cron: "0 7 * * *"
   workflow_dispatch:
 
 permissions:
@@ -20,7 +23,14 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 20
-      - run: node scripts/update-scores.mjs
+      - name: Update scores (skip the 11pm run in winter)
+        run: |
+          HOUR=$(TZ=America/Denver date +%H)
+          if [ "${{ github.event_name }}" = "schedule" ] && [ "$HOUR" = "23" ]; then
+            echo "It's 11pm in Cheyenne, the midnight run will handle it."
+          else
+            node scripts/update-scores.mjs
+          fi
       - name: Commit if scores changed
         run: |
           if [ -n "$(git status --porcelain scores.json)" ]; then
