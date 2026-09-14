@@ -26,12 +26,24 @@
   .scroll{overflow-x:auto}
 
   /* leaderboard */
-  table{width:100%;border-collapse:collapse}
-  th{font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);text-align:left;padding:8px 10px;border-bottom:1px solid var(--line)}
-  td{padding:10px;border-bottom:1px solid var(--line);vertical-align:middle}
-  tr:last-child td{border-bottom:0}
-  .rank{font-family:"Bebas Neue",Impact,sans-serif;font-size:30px;width:44px;color:var(--muted)}
-  tr.r1 .rank{color:var(--gold)}
+  .bhead,.brow{display:grid;grid-template-columns:44px 110px 1fr 90px 70px;gap:10px;align-items:center;padding:10px 14px}
+  .bhead{font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);font-weight:600;border-bottom:1px solid var(--line);margin-bottom:8px}
+  .bhead .r{text-align:right}
+  .brow{border:3px solid transparent;border-radius:14px;margin-bottom:8px;background:var(--panel2) padding-box}
+  .rank{font-family:"Bebas Neue",Impact,sans-serif;font-size:30px;color:var(--muted)}
+
+  /* medal rows: polished metal borders with a slow shine sweeping across */
+  .brow.gold,.brow.silver,.brow.bronze{
+    background:linear-gradient(var(--panel2),var(--panel2)) padding-box, var(--metal) border-box;
+    background-size:100% 100%, 300% 300%;
+    animation:shine 4s linear infinite;
+  }
+  .brow.gold{--metal:linear-gradient(115deg,#6b4a0c 0%,#c9971f 10%,#fff3b0 18%,#b8860b 26%,#8a6212 36%,#f7dc6f 46%,#fffbe0 50%,#d4a627 56%,#7a5410 68%,#e9c55a 80%,#fff3b0 88%,#9c7212 100%);box-shadow:0 0 18px rgba(245,197,66,.35)}
+  .brow.silver{--metal:linear-gradient(115deg,#5d6268 0%,#a9b0b7 10%,#ffffff 18%,#8c939a 26%,#666c72 36%,#d9dee3 46%,#ffffff 50%,#b3bac1 56%,#5f656b 68%,#c9cfd5 80%,#ffffff 88%,#7c838a 100%);box-shadow:0 0 16px rgba(220,226,232,.28)}
+  .brow.bronze{--metal:linear-gradient(115deg,#4e2a0f 0%,#a0602b 10%,#ffd3a6 18%,#8c4a1c 26%,#653512 36%,#e0a064 46%,#fff0dd 50%,#b8733a 56%,#5a3012 68%,#cf8c52 80%,#ffd3a6 88%,#7a4119 100%);box-shadow:0 0 16px rgba(205,127,50,.32)}
+  @keyframes shine{from{background-position:0 0, 0% 50%}to{background-position:0 0, 150% 50%}}
+  .brow.gold .rank,.brow.silver .rank,.brow.bronze .rank{background:var(--metal);background-size:200% 200%;-webkit-background-clip:text;background-clip:text;color:transparent;font-size:36px}
+  @media (prefers-reduced-motion: reduce){.brow.gold,.brow.silver,.brow.bronze{animation:none}}
   .pname{font-weight:800;font-size:17px}
   .pts{font-family:"Bebas Neue",Impact,sans-serif;font-size:34px;text-align:right}
   .wk{text-align:right;color:var(--good);font-weight:600;white-space:nowrap}
@@ -99,7 +111,7 @@
   @media (max-width:640px){
     .hide-sm{display:none}
     .weekbar h3{width:100%}
-    td{padding:8px 6px}
+    .bhead,.brow{grid-template-columns:34px 1fr 64px 52px;gap:8px;padding:8px 10px}
     .pts{font-size:28px}
   }
 </style>
@@ -113,11 +125,9 @@
   </header>
 
   <h2>Standings</h2>
-  <div class="panel scroll">
-    <table>
-      <thead><tr><th></th><th>Player</th><th class="hide-sm">Teams</th><th style="text-align:right">This week</th><th style="text-align:right">Total</th></tr></thead>
-      <tbody id="board"></tbody>
-    </table>
+  <div class="panel">
+    <div class="bhead"><span></span><span>Player</span><span class="hide-sm">Teams</span><span class="r">This week</span><span class="r">Total</span></div>
+    <div id="board"></div>
   </div>
 
   <h2>Week by week</h2>
@@ -261,10 +271,13 @@ function render() {
     return { p, total, wk: playerWeek(p, currentWeek).total };
   }).sort((a, b) => b.total - a.total || a.p.name.localeCompare(b.p.name));
   let rank = 0, prev = null;
+  // medals go by score: top score gold, next-highest silver, the one after bronze (ties share)
+  const distinct = [...new Set(rows.map(r => r.total))];
   document.getElementById("board").innerHTML = rows.map((r, i) => {
     if (r.total !== prev) { rank = i + 1; prev = r.total; }
+    const medal = r.total > 0 ? (["gold", "silver", "bronze"][distinct.indexOf(r.total)] || "") : "";
     const chips = KINDS.map(k => `<span class="chip t-${k}"><img src="${logo(r.p[k])}" alt="">${KIND_LABEL[k]} <b>${r.p[k]}</b></span>`).join("");
-    return `<tr class="r${rank}"><td class="rank">${rank}</td><td class="pname">${r.p.name}</td><td class="hide-sm"><div class="picks">${chips}</div></td><td class="wk">+${r.wk}</td><td class="pts">${r.total}</td></tr>`;
+    return `<div class="brow ${medal}"><span class="rank">${rank}</span><span class="pname">${r.p.name}</span><span class="hide-sm picks">${chips}</span><span class="wk">+${r.wk}</span><span class="pts">${r.total}</span></div>`;
   }).join("");
 
   renderWeek();
