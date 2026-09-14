@@ -103,6 +103,20 @@
   .players{grid-template-columns:repeat(auto-fill,minmax(min(250px,100%),1fr))}
   .game,.pcard{min-width:0}
   h1{overflow-wrap:anywhere}
+  /* upcoming games */
+  .up-week{font-family:"Bebas Neue",Impact,sans-serif;font-size:26px;letter-spacing:1px;margin:18px 0 2px}
+  .up-week:first-child{margin-top:0}
+  .up-day{font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--gold);font-weight:800;margin:12px 0 4px}
+  .up-row{display:grid;grid-template-columns:1fr auto;gap:12px;align-items:center;padding:10px 0;border-top:1px solid var(--line)}
+  .up-teams{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-weight:600}
+  .up-teams img{width:28px;height:28px}
+  .up-at{color:var(--muted);font-size:12px;font-weight:400}
+  .up-times{display:flex;gap:8px}
+  .tz{background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:5px 12px;text-align:center;min-width:104px}
+  .tz b{display:block;font-size:16px}
+  .tz span{font-size:10px;color:var(--muted);letter-spacing:.06em;text-transform:uppercase}
+  @media (max-width:640px){.up-row{grid-template-columns:1fr;gap:8px}.tz{flex:1}}
+
   /* flying football */
   .football{position:fixed;left:0;top:0;width:64px;height:40px;pointer-events:none;z-index:50;will-change:transform;filter:drop-shadow(0 8px 6px rgba(0,0,0,.45))}
   .football svg{width:100%;height:100%;display:block;animation:spiral .16s linear infinite alternate}
@@ -129,6 +143,9 @@
     <div class="bhead"><span></span><span>Player</span><span class="hide-sm">Teams</span><span class="r">This week</span><span class="r">Total</span></div>
     <div id="board"></div>
   </div>
+
+  <h2>Upcoming games</h2>
+  <div class="panel" id="upcoming"></div>
 
   <h2>Week by week</h2>
   <div class="weekbar">
@@ -280,6 +297,7 @@ function render() {
     return `<div class="brow ${medal}"><span class="rank">${rank}</span><span class="pname">${r.p.name}</span><span class="hide-sm picks">${chips}</span><span class="wk">+${r.wk}</span><span class="pts">${r.total}</span></div>`;
   }).join("");
 
+  renderUpcoming();
   renderWeek();
 
   // player cards
@@ -288,6 +306,41 @@ function render() {
       <h3>${r.p.name} <span>${r.total} pts</span></h3>
       ${KINDS.map(k => `<div class="prow"><span class="k ${k}">${KIND_LABEL[k]}<br>${k === "love" || k === "loathe" ? (WANTS_WIN[k] ? "win " : "lose ") : ""}+${POINTS[k]}</span><img src="${logo(r.p[k])}" alt=""><span class="tn">${teamNames[r.p[k]] || r.p[k]}</span><span class="rec"><b>${recStr(rec[r.p[k]])}</b>record</span></div>`).join("")}
     </div>`).join("");
+}
+
+// Kickoff time in a given time zone, plus its short name (MDT/MST, PDT/PST switch on their own)
+function tzTime(d, tz) {
+  const time = d.toLocaleTimeString("en-US", { timeZone: tz, hour: "numeric", minute: "2-digit" });
+  const abbr = new Intl.DateTimeFormat("en-US", { timeZone: tz, timeZoneName: "short" }).formatToParts(d).find(p => p.type === "timeZoneName").value;
+  return { time, abbr };
+}
+
+function renderUpcoming() {
+  const now = Date.now();
+  // games that haven't kicked off yet; if a week only has a couple left, keep going into the next week
+  const groups = [];
+  let count = 0;
+  for (let w = START_WEEK; w <= 18 && count < 3; w++) {
+    const left = (weeks[w] || []).filter(g => !g.final && g.date.getTime() > now).sort((a, b) => a.date - b.date);
+    if (left.length) { groups.push({ w, games: left }); count += left.length; }
+  }
+  const el = document.getElementById("upcoming");
+  if (!groups.length) { el.innerHTML = `<div class="none">No more regular season games. That's a wrap!</div>`; return; }
+
+  el.innerHTML = groups.map(({ w, games }) => {
+    let lastDay = "";
+    return `<div class="up-week">Week ${w}</div>` + games.map(g => {
+      const day = g.date.toLocaleDateString("en-US", { timeZone: "America/Denver", weekday: "long", month: "short", day: "numeric" });
+      const header = day !== lastDay ? `<div class="up-day">${day}</div>` : "";
+      lastDay = day;
+      const [away, home] = g.teams;
+      const mt = tzTime(g.date, "America/Denver"), pt = tzTime(g.date, "America/Los_Angeles");
+      return `${header}<div class="up-row">
+        <div class="up-teams"><img src="${logo(away.abbr)}" alt="">${away.name} <span class="up-at">at</span> <img src="${logo(home.abbr)}" alt="">${home.name}</div>
+        <div class="up-times"><div class="tz"><b>${mt.time}</b><span>Cheyenne ${mt.abbr}</span></div><div class="tz"><b>${pt.time}</b><span>Seattle ${pt.abbr}</span></div></div>
+      </div>`;
+    }).join("");
+  }).join("");
 }
 
 function renderWeek() {
