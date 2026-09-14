@@ -1,0 +1,342 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Love & Loathe League 2026</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0d1f16; --panel:#15301f; --panel2:#1b3b27; --line:#2a5139;
+    --text:#eef5ef; --muted:#9db8a5; --gold:#f5c542; --love:#ff5d8f; --loathe:#8f7cff;
+    --good:#3ddc84; --bad:#ff8a3d; --zero:#5d7766;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--text);font:15px/1.45 Inter,system-ui,sans-serif;padding:0 16px 60px}
+  .wrap{max-width:1100px;margin:0 auto}
+  header{padding:34px 0 18px;text-align:center;border-bottom:4px dashed var(--line);margin-bottom:26px}
+  h1,h2,h3{font-family:"Bebas Neue",Impact,sans-serif;letter-spacing:1px;font-weight:400;margin:0}
+  h1{font-size:clamp(46px,11vw,92px);line-height:.9}
+  h1 .amp{color:var(--gold)}
+  .sub{color:var(--muted);margin-top:8px}
+  .status{font-size:13px;color:var(--muted);margin-top:10px}
+  h2{font-size:38px;margin:34px 0 12px}
+  .panel{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:16px}
+  .scroll{overflow-x:auto}
+
+  /* leaderboard */
+  table{width:100%;border-collapse:collapse}
+  th{font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);text-align:left;padding:8px 10px;border-bottom:1px solid var(--line)}
+  td{padding:10px;border-bottom:1px solid var(--line);vertical-align:middle}
+  tr:last-child td{border-bottom:0}
+  .rank{font-family:"Bebas Neue",Impact,sans-serif;font-size:30px;width:44px;color:var(--muted)}
+  tr.r1 .rank{color:var(--gold)}
+  .pname{font-weight:800;font-size:17px}
+  .pts{font-family:"Bebas Neue",Impact,sans-serif;font-size:34px;text-align:right}
+  .wk{text-align:right;color:var(--good);font-weight:600;white-space:nowrap}
+  .picks{display:flex;gap:6px;flex-wrap:wrap}
+  .chip{display:inline-flex;align-items:center;gap:5px;background:var(--panel2);border:1px solid var(--line);border-radius:999px;padding:3px 9px 3px 4px;font-size:12px;white-space:nowrap}
+  .chip img{width:20px;height:20px}
+  .chip b{font-weight:800}
+  .t-love{border-color:var(--love)} .t-loathe{border-color:var(--loathe)} .t-good{border-color:var(--good)} .t-bad{border-color:var(--bad)}
+
+  /* week */
+  .weekbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+  .weekbar button,.weekbar select{background:var(--panel2);color:var(--text);border:1px solid var(--line);border-radius:10px;padding:8px 14px;font:600 15px Inter,sans-serif;cursor:pointer}
+  .weekbar button:disabled{opacity:.35;cursor:default}
+  .weekbar h3{font-size:30px;margin-right:auto}
+  .weekscores{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px}
+  .ws{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:6px 12px;font-size:14px}
+  .ws b{font-family:"Bebas Neue",Impact,sans-serif;font-size:22px;font-weight:400;margin-left:6px;color:var(--gold)}
+  .games{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px}
+  .game{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:12px 14px}
+  .game.live{border-color:var(--gold)}
+  .gtime{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px;display:flex;justify-content:space-between}
+  .gtime .livedot{color:var(--gold);font-weight:800}
+  .team{display:flex;align-items:center;gap:10px;padding:4px 0}
+  .team img{width:34px;height:34px}
+  .team .nm{flex:1;font-weight:600}
+  .team.win .nm{font-weight:800}
+  .team.lose{opacity:.6}
+  .team .sc{font-family:"Bebas Neue",Impact,sans-serif;font-size:28px}
+  .who{margin-top:8px;border-top:1px dashed var(--line);padding-top:8px;display:flex;flex-direction:column;gap:5px}
+  .who .row{display:flex;flex-wrap:wrap;gap:5px;align-items:center;font-size:12px}
+  .who .lbl{color:var(--muted);width:100%;font-size:11px;text-transform:uppercase;letter-spacing:.05em}
+  .tag{border-radius:999px;padding:2px 8px;font-size:12px;font-weight:600;background:var(--panel2);border:1px solid var(--line)}
+  .tag.scored{background:var(--good);color:#06240f;border-color:var(--good)}
+  .tag.missed{opacity:.45;text-decoration:line-through}
+  .none{color:var(--zero);font-size:12px}
+
+  /* players */
+  .players{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:12px}
+  .pcard h3{font-size:30px;display:flex;justify-content:space-between}
+  .pcard h3 span{color:var(--gold)}
+  .prow{display:flex;align-items:center;gap:10px;padding:7px 0;border-top:1px solid var(--line)}
+  .prow img{width:30px;height:30px}
+  .prow .k{font-size:11px;text-transform:uppercase;letter-spacing:.05em;font-weight:800;width:62px}
+  .prow .tn{flex:1;font-size:14px}
+  .prow .rec{font-size:12px;color:var(--muted);text-align:right}
+  .prow .rec b{color:var(--text);display:block;font-size:15px}
+  .k.love{color:var(--love)} .k.loathe{color:var(--loathe)} .k.good{color:var(--good)} .k.bad{color:var(--bad)}
+
+  /* rules */
+  .rules{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px}
+  .rule{text-align:center;padding:18px}
+  .rule .big{font-family:"Bebas Neue",Impact,sans-serif;font-size:60px;line-height:1}
+  .rule .what{font-weight:800;text-transform:uppercase;letter-spacing:.05em}
+  .fine{color:var(--muted);margin-top:12px;font-size:14px}
+  footer{text-align:center;color:var(--muted);font-size:12px;margin-top:40px}
+  .games{grid-template-columns:repeat(auto-fill,minmax(min(300px,100%),1fr))}
+  .players{grid-template-columns:repeat(auto-fill,minmax(min(250px,100%),1fr))}
+  .game,.pcard{min-width:0}
+  h1{overflow-wrap:anywhere}
+  @media (max-width:640px){
+    .hide-sm{display:none}
+    .weekbar h3{width:100%}
+    td{padding:8px 6px}
+    .pts{font-size:28px}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Love <span class="amp">&amp;</span> Loathe League</h1>
+    <div class="sub">The family NFL showdown, 2026 regular season</div>
+    <div class="status" id="status">Loading scores...</div>
+  </header>
+
+  <h2>Standings</h2>
+  <div class="panel scroll">
+    <table>
+      <thead><tr><th></th><th>Player</th><th class="hide-sm">Teams</th><th style="text-align:right">This week</th><th style="text-align:right">Total</th></tr></thead>
+      <tbody id="board"></tbody>
+    </table>
+  </div>
+
+  <h2>Week by week</h2>
+  <div class="weekbar">
+    <h3 id="weektitle">Week</h3>
+    <button id="prev" aria-label="Previous week">&larr;</button>
+    <select id="weeksel" aria-label="Pick a week"></select>
+    <button id="next" aria-label="Next week">&rarr;</button>
+  </div>
+  <div class="weekscores" id="weekscores"></div>
+  <div class="games" id="games"></div>
+
+  <h2>The teams</h2>
+  <div class="players" id="players"></div>
+
+  <h2>How scoring works</h2>
+  <div class="rules">
+    <div class="panel rule"><div class="big" style="color:var(--love)">5</div><div class="what">Love team wins</div></div>
+    <div class="panel rule"><div class="big" style="color:var(--loathe)">4</div><div class="what">Loathe team loses</div></div>
+    <div class="panel rule"><div class="big" style="color:var(--good)">3</div><div class="what">Good team wins</div></div>
+    <div class="panel rule"><div class="big" style="color:var(--bad)">3</div><div class="what">Bad team loses</div></div>
+  </div>
+  <p class="fine">Ties are worth 0 for everyone. Only regular season games count, so no preseason and no playoffs. Scores update on their own every 15 minutes; just refresh the page.</p>
+
+  <footer>Scores from ESPN. Points only count once a game is final.</footer>
+</div>
+
+<script>
+// ---- League setup: edit here ----
+const SEASON = 2026;
+const START_WEEK = 1;
+const POINTS = { good: 3, bad: 3, love: 5, loathe: 4 };
+const PLAYERS = [
+  { name: "Steve", good: "WSH", bad: "ARI", love: "DEN", loathe: "DAL" },
+  { name: "Anne",  good: "PIT", bad: "CLE", love: "DEN", loathe: "LV"  },
+  { name: "Julia", good: "BAL", bad: "LAC", love: "MIN", loathe: "CHI" },
+  { name: "Papa",  good: "DET", bad: "IND", love: "SEA", loathe: "LAR" },
+  { name: "Luke",  good: "NE",  bad: "MIA", love: "SEA", loathe: "SF"  },
+  { name: "Nana",  good: "TB",  bad: "ATL", love: "SEA", loathe: "LAR" },
+  { name: "Luisa", good: "PHI", bad: "NYG", love: "CHI", loathe: "GB"  },
+  { name: "Abby",  good: "JAX", bad: "NYJ", love: "DEN", loathe: "KC"  },
+  { name: "Jake",  good: "BUF", bad: "TEN", love: "SF",  loathe: "KC"  },
+  { name: "Mimi",  good: "HOU", bad: "NO",  love: "SEA", loathe: "CAR" },
+  { name: "JD",    good: "CIN", bad: "NYJ", love: "SEA", loathe: "LAR" },
+];
+// ---------------------------------
+
+const KINDS = ["love", "loathe", "good", "bad"];
+const KIND_LABEL = { love: "Love", loathe: "Loathe", good: "Good", bad: "Bad" };
+const WANTS_WIN = { love: true, good: true, loathe: false, bad: false };
+const API = "https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard";
+const logo = a => `https://a.espncdn.com/i/teamlogos/nfl/500/${a.toLowerCase()}.png`;
+
+const teamNames = {};        // abbr -> display name
+let weeks = {};              // week number -> array of games
+let currentWeek = START_WEEK;
+let shownWeek = null;
+
+// g is the simplified game shape written by scripts/update-scores.mjs
+function parseGame(g) {
+  const teams = g.teams.map(t => {
+    teamNames[t.abbr] = t.displayName;
+    return { ...t };
+  }).sort((a, b) => (a.homeAway === "away" ? -1 : 1));
+  let result = null; // abbr -> "W" | "L" | "T"
+  if (g.completed) {
+    result = {};
+    const [a, b] = teams;
+    if (a.score === b.score && !a.winner && !b.winner) { result[a.abbr] = "T"; result[b.abbr] = "T"; }
+    else {
+      const aWon = a.winner || (!b.winner && a.score > b.score);
+      result[a.abbr] = aWon ? "W" : "L"; result[b.abbr] = aWon ? "L" : "W";
+    }
+  }
+  return { id: g.id, date: new Date(g.date), teams, final: g.completed, live: g.state === "in", detail: g.detail, result };
+}
+
+// Same shape conversion for a raw ESPN event (used only if scores.json is unavailable)
+function simplify(e) {
+  const c = e.competitions[0], st = e.status.type;
+  return {
+    id: e.id, date: e.date, state: st.state, detail: st.shortDetail,
+    completed: st.completed === true || st.name === "STATUS_FINAL",
+    teams: c.competitors.map(t => ({ abbr: t.team.abbreviation, name: t.team.shortDisplayName, displayName: t.team.displayName, score: Number(t.score || 0), homeAway: t.homeAway, winner: !!t.winner })),
+  };
+}
+
+// Points a player earns from one team's result
+function pointsFor(kind, res) {
+  if (!res || res === "T") return 0;
+  return (res === "W") === WANTS_WIN[kind] ? POINTS[kind] : 0;
+}
+
+async function loadData() {
+  try {
+    const r = await fetch(`scores.json?t=${Date.now()}`, { cache: "no-store" });
+    if (!r.ok) throw new Error("no scores.json");
+    const d = await r.json();
+    return { currentWeek: d.currentWeek, updated: new Date(d.updated), weeks: d.weeks };
+  } catch {
+    // Fallback: straight from ESPN
+    const now = await (await fetch(API)).json();
+    let cw = START_WEEK;
+    if (now.season && now.season.year === SEASON && now.season.type === 2) cw = Math.min(18, now.week.number);
+    else if (now.season && (now.season.year > SEASON || now.season.type > 2)) cw = 18;
+    const out = {};
+    await Promise.all(Array.from({ length: 18 }, (_, i) => i + 1).map(async w => {
+      const d = await (await fetch(`${API}?seasontype=2&week=${w}&dates=${SEASON}`)).json();
+      out[w] = (d.events || []).map(simplify);
+    }));
+    return { currentWeek: cw, updated: new Date(), weeks: out };
+  }
+}
+
+function playerWeek(p, w) {
+  let total = 0;
+  for (const g of weeks[w] || []) for (const k of KINDS) {
+    const ab = p[k];
+    if (g.teams.some(t => t.abbr === ab)) total += pointsFor(k, g.result && g.result[ab]);
+  }
+  return { total };
+}
+
+function records() {
+  const rec = {};
+  for (const w in weeks) for (const g of weeks[w]) if (g.final) for (const t of g.teams) {
+    rec[t.abbr] = rec[t.abbr] || { W: 0, L: 0, T: 0 };
+    rec[t.abbr][g.result[t.abbr]]++;
+  }
+  return rec;
+}
+const recStr = r => r ? `${r.W}-${r.L}${r.T ? "-" + r.T : ""}` : "0-0";
+
+function render() {
+  const rec = records();
+
+  // standings
+  const rows = PLAYERS.map(p => {
+    let total = 0;
+    for (let w = START_WEEK; w <= 18; w++) total += playerWeek(p, w).total;
+    return { p, total, wk: playerWeek(p, currentWeek).total };
+  }).sort((a, b) => b.total - a.total || a.p.name.localeCompare(b.p.name));
+  let rank = 0, prev = null;
+  document.getElementById("board").innerHTML = rows.map((r, i) => {
+    if (r.total !== prev) { rank = i + 1; prev = r.total; }
+    const chips = KINDS.map(k => `<span class="chip t-${k}"><img src="${logo(r.p[k])}" alt="">${KIND_LABEL[k]} <b>${r.p[k]}</b></span>`).join("");
+    return `<tr class="r${rank}"><td class="rank">${rank}</td><td class="pname">${r.p.name}</td><td class="hide-sm"><div class="picks">${chips}</div></td><td class="wk">+${r.wk}</td><td class="pts">${r.total}</td></tr>`;
+  }).join("");
+
+  renderWeek();
+
+  // player cards
+  document.getElementById("players").innerHTML = rows.map(r => `
+    <div class="panel pcard">
+      <h3>${r.p.name} <span>${r.total} pts</span></h3>
+      ${KINDS.map(k => `<div class="prow"><span class="k ${k}">${KIND_LABEL[k]}<br>${WANTS_WIN[k] ? "win" : "lose"} +${POINTS[k]}</span><img src="${logo(r.p[k])}" alt=""><span class="tn">${teamNames[r.p[k]] || r.p[k]}</span><span class="rec"><b>${recStr(rec[r.p[k]])}</b>record</span></div>`).join("")}
+    </div>`).join("");
+}
+
+function renderWeek() {
+  const w = shownWeek;
+  document.getElementById("weektitle").textContent = `Week ${w}`;
+  document.getElementById("weeksel").value = w;
+  document.getElementById("prev").disabled = w <= START_WEEK;
+  document.getElementById("next").disabled = w >= 18;
+
+  const games = weeks[w] || [];
+  const ws = PLAYERS.map(p => ({ name: p.name, pts: playerWeek(p, w).total })).sort((a, b) => b.pts - a.pts);
+  document.getElementById("weekscores").innerHTML = ws.map(s => `<span class="ws">${s.name}<b>${s.pts}</b></span>`).join("");
+
+  document.getElementById("games").innerHTML = games.slice().sort((a, b) => a.date - b.date).map(g => {
+    const when = g.final ? "Final" : g.live ? `<span class="livedot">LIVE</span> ${g.detail}` : g.date.toLocaleString(undefined, { weekday: "short", month: "short", day: "numeric", hour: "numeric", minute: "2-digit" });
+    const teamRows = g.teams.map(t => {
+      const cls = g.final ? (g.result[t.abbr] === "W" ? "win" : g.result[t.abbr] === "L" ? "lose" : "") : "";
+      const sc = (g.final || g.live) ? t.score : "";
+      return `<div class="team ${cls}"><img src="${logo(t.abbr)}" alt=""><span class="nm">${t.name}</span><span class="sc">${sc}</span></div>`;
+    }).join("");
+    // who has a stake, grouped by which side they need
+    const sides = g.teams.map(t => {
+      const tags = [];
+      const other = g.teams.find(x => x.abbr !== t.abbr).abbr;
+      for (const p of PLAYERS) {
+        // player needs team t to win if: k wants win and p[k]==t, or k wants loss and p[k]==other
+        let stake = 0, earned = 0;
+        for (const k of KINDS) {
+          const needsT = (WANTS_WIN[k] && p[k] === t.abbr) || (!WANTS_WIN[k] && p[k] === other);
+          if (needsT) { stake += POINTS[k]; earned += pointsFor(k, g.result && g.result[p[k]]); }
+        }
+        if (stake) {
+          const cls = g.final ? (earned ? "scored" : "missed") : "";
+          tags.push(`<span class="tag ${cls}">${p.name} +${stake}</span>`);
+        }
+      }
+      return `<div class="row"><span class="lbl">Rooting for ${t.name}</span>${tags.length ? tags.join("") : '<span class="none">Nobody</span>'}</div>`;
+    }).join("");
+    return `<div class="game ${g.live ? "live" : ""}"><div class="gtime"><span>${when}</span></div>${teamRows}<div class="who">${sides}</div></div>`;
+  }).join("") || `<div class="none">No games found.</div>`;
+}
+
+async function load() {
+  const status = document.getElementById("status");
+  try {
+    const d = await loadData();
+    currentWeek = Math.max(START_WEEK, d.currentWeek);
+    weeks = {};
+    for (const w in d.weeks) weeks[w] = d.weeks[w].map(parseGame);
+    if (shownWeek === null) shownWeek = currentWeek;
+    render();
+    status.textContent = `Week ${currentWeek}. Scores last updated ${d.updated.toLocaleString([], { weekday: "short", hour: "numeric", minute: "2-digit" })}`;
+    const anyLive = (weeks[currentWeek] || []).some(g => g.live);
+    setTimeout(load, anyLive ? 120000 : 600000);
+  } catch (err) {
+    status.textContent = "Could not load scores right now. Try refreshing in a minute.";
+    setTimeout(load, 120000);
+  }
+}
+
+const sel = document.getElementById("weeksel");
+for (let w = START_WEEK; w <= 18; w++) sel.insertAdjacentHTML("beforeend", `<option value="${w}">Week ${w}</option>`);
+function goWeek(w) { shownWeek = w; renderWeek(); }
+sel.onchange = () => goWeek(Number(sel.value));
+document.getElementById("prev").onclick = () => goWeek(shownWeek - 1);
+document.getElementById("next").onclick = () => goWeek(shownWeek + 1);
+load();
+</script>
+</body>
+</html>
