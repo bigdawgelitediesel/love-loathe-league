@@ -307,11 +307,9 @@ function render() {
     </div>`).join("");
 }
 
-// Kickoff time in a given time zone, plus its short name (MDT/MST, PDT/PST switch on their own)
+// Kickoff time in a given time zone (labeled MT/PT on the page, so daylight saving never changes the label)
 function tzTime(d, tz) {
-  const time = d.toLocaleTimeString("en-US", { timeZone: tz, hour: "numeric", minute: "2-digit" });
-  const abbr = new Intl.DateTimeFormat("en-US", { timeZone: tz, timeZoneName: "short" }).formatToParts(d).find(p => p.type === "timeZoneName").value;
-  return { time, abbr };
+  return d.toLocaleTimeString("en-US", { timeZone: tz, hour: "numeric", minute: "2-digit" });
 }
 
 function renderUpcoming() {
@@ -339,7 +337,7 @@ function renderUpcoming() {
       const mt = tzTime(g.date, "America/Denver"), pt = tzTime(g.date, "America/Los_Angeles");
       return `<div class="up-g">
         <div class="up-teams"><img src="${logo(away.abbr)}" alt="">${away.name}<span class="up-at">at</span><img src="${logo(home.abbr)}" alt="">${home.name}</div>
-        <div class="up-times"><span><b>${mt.time}</b>${mt.abbr}</span><span><b>${pt.time}</b>${pt.abbr}</span></div>
+        <div class="up-times"><span><b>${mt}</b>MT</span><span><b>${pt}</b>PT</span></div>
       </div>`;
     }).join("") + `</div>`).join("");
   }).join("");
