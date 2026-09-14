@@ -104,18 +104,17 @@
   .game,.pcard{min-width:0}
   h1{overflow-wrap:anywhere}
   /* upcoming games */
-  .up-week{font-family:"Bebas Neue",Impact,sans-serif;font-size:26px;letter-spacing:1px;margin:18px 0 2px}
+  #upcoming{padding:12px}
+  .up-week{font-family:"Bebas Neue",Impact,sans-serif;font-size:20px;letter-spacing:1px;line-height:1;margin:12px 0 0}
   .up-week:first-child{margin-top:0}
-  .up-day{font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--gold);font-weight:800;margin:12px 0 4px}
-  .up-row{display:grid;grid-template-columns:1fr auto;gap:12px;align-items:center;padding:10px 0;border-top:1px solid var(--line)}
-  .up-teams{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-weight:600}
-  .up-teams img{width:28px;height:28px}
-  .up-at{color:var(--muted);font-size:12px;font-weight:400}
-  .up-times{display:flex;gap:8px}
-  .tz{background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:5px 12px;text-align:center;min-width:104px}
-  .tz b{display:block;font-size:16px}
-  .tz span{font-size:10px;color:var(--muted);letter-spacing:.06em;text-transform:uppercase}
-  @media (max-width:640px){.up-row{grid-template-columns:1fr;gap:8px}.tz{flex:1}}
+  .up-day{font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:var(--gold);font-weight:800;margin:6px 0 4px}
+  .up-games{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(255px,100%),1fr));gap:5px}
+  .up-g{background:var(--panel2);border:1px solid var(--line);border-radius:9px;padding:5px 9px}
+  .up-teams{display:flex;align-items:center;gap:4px;font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden}
+  .up-teams img{width:18px;height:18px}
+  .up-at{color:var(--muted);font-size:10px;font-weight:400;margin:0 2px}
+  .up-times{display:flex;gap:10px;margin-top:2px;font-size:10px;color:var(--muted);white-space:nowrap}
+  .up-times b{color:var(--text);font-size:12px;font-weight:700;margin-right:3px}
 
   /* flying football */
   .football{position:fixed;left:0;top:0;width:64px;height:40px;pointer-events:none;z-index:50;will-change:transform;filter:drop-shadow(0 8px 6px rgba(0,0,0,.45))}
@@ -328,18 +327,21 @@ function renderUpcoming() {
   if (!groups.length) { el.innerHTML = `<div class="none">No more regular season games. That's a wrap!</div>`; return; }
 
   el.innerHTML = groups.map(({ w, games }) => {
-    let lastDay = "";
-    return `<div class="up-week">Week ${w}</div>` + games.map(g => {
+    // bunch each week's games by Cheyenne calendar day
+    const days = [];
+    for (const g of games) {
       const day = g.date.toLocaleDateString("en-US", { timeZone: "America/Denver", weekday: "long", month: "short", day: "numeric" });
-      const header = day !== lastDay ? `<div class="up-day">${day}</div>` : "";
-      lastDay = day;
+      if (!days.length || days[days.length - 1].day !== day) days.push({ day, games: [] });
+      days[days.length - 1].games.push(g);
+    }
+    return `<div class="up-week">Week ${w}</div>` + days.map(d => `<div class="up-day">${d.day}</div><div class="up-games">` + d.games.map(g => {
       const [away, home] = g.teams;
       const mt = tzTime(g.date, "America/Denver"), pt = tzTime(g.date, "America/Los_Angeles");
-      return `${header}<div class="up-row">
-        <div class="up-teams"><img src="${logo(away.abbr)}" alt="">${away.name} <span class="up-at">at</span> <img src="${logo(home.abbr)}" alt="">${home.name}</div>
-        <div class="up-times"><div class="tz"><b>${mt.time}</b><span>Cheyenne ${mt.abbr}</span></div><div class="tz"><b>${pt.time}</b><span>Seattle ${pt.abbr}</span></div></div>
+      return `<div class="up-g">
+        <div class="up-teams"><img src="${logo(away.abbr)}" alt="">${away.name}<span class="up-at">at</span><img src="${logo(home.abbr)}" alt="">${home.name}</div>
+        <div class="up-times"><span><b>${mt.time}</b>Cheyenne ${mt.abbr}</span><span><b>${pt.time}</b>Seattle ${pt.abbr}</span></div>
       </div>`;
-    }).join("");
+    }).join("") + `</div>`).join("");
   }).join("");
 }
 
