@@ -147,8 +147,8 @@
   <div class="rules">
     <div class="panel rule"><div class="big" style="color:var(--love)">5</div><div class="what">Love team wins</div></div>
     <div class="panel rule"><div class="big" style="color:var(--loathe)">4</div><div class="what">Loathe team loses</div></div>
-    <div class="panel rule"><div class="big" style="color:var(--good)">3</div><div class="what">Good team wins</div></div>
-    <div class="panel rule"><div class="big" style="color:var(--bad)">3</div><div class="what">Bad team loses</div></div>
+    <div class="panel rule"><div class="big" style="color:var(--good)">3</div><div class="what">Win team wins</div></div>
+    <div class="panel rule"><div class="big" style="color:var(--bad)">3</div><div class="what">Lose team loses</div></div>
   </div>
   <p class="fine">Ties are worth 0 for everyone. Only regular season games count, so no preseason and no playoffs. Scores update on their own every night at midnight (Mountain time).</p>
 
@@ -176,7 +176,7 @@ const PLAYERS = [
 // ---------------------------------
 
 const KINDS = ["love", "loathe", "good", "bad"];
-const KIND_LABEL = { love: "Love", loathe: "Loathe", good: "Good", bad: "Bad" };
+const KIND_LABEL = { love: "Love", loathe: "Loathe", good: "Win", bad: "Lose" };
 const WANTS_WIN = { love: true, good: true, loathe: false, bad: false };
 const API = "https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard";
 const logo = a => `https://a.espncdn.com/i/teamlogos/nfl/500/${a.toLowerCase()}.png`;
@@ -286,7 +286,7 @@ function render() {
   document.getElementById("players").innerHTML = rows.map(r => `
     <div class="panel pcard">
       <h3>${r.p.name} <span>${r.total} pts</span></h3>
-      ${KINDS.map(k => `<div class="prow"><span class="k ${k}">${KIND_LABEL[k]}<br>${WANTS_WIN[k] ? "win" : "lose"} +${POINTS[k]}</span><img src="${logo(r.p[k])}" alt=""><span class="tn">${teamNames[r.p[k]] || r.p[k]}</span><span class="rec"><b>${recStr(rec[r.p[k]])}</b>record</span></div>`).join("")}
+      ${KINDS.map(k => `<div class="prow"><span class="k ${k}">${KIND_LABEL[k]}<br>${k === "love" || k === "loathe" ? (WANTS_WIN[k] ? "win " : "lose ") : ""}+${POINTS[k]}</span><img src="${logo(r.p[k])}" alt=""><span class="tn">${teamNames[r.p[k]] || r.p[k]}</span><span class="rec"><b>${recStr(rec[r.p[k]])}</b>record</span></div>`).join("")}
     </div>`).join("");
 }
 
