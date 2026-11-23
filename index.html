@@ -166,7 +166,7 @@
     <div class="panel rule"><div class="big" style="color:var(--good)">3</div><div class="what">Win team wins</div></div>
     <div class="panel rule"><div class="big" style="color:var(--bad)">3</div><div class="what">Lose team loses</div></div>
   </div>
-  <p class="fine">Ties are worth 0 for everyone. Only regular season games count, so no preseason and no playoffs. Scores update on their own every night at midnight (Mountain time).</p>
+  <p class="fine">A tie is worth 1 point for each of your teams in that game. Only regular season games count, so no preseason and no playoffs. Scores update on their own every night at midnight (Mountain time).</p>
 
   <footer>Scores from ESPN. Points only count once a game is final.</footer>
 </div>
@@ -176,6 +176,7 @@
 const SEASON = 2026;
 const START_WEEK = 1;
 const POINTS = { good: 3, bad: 3, love: 5, loathe: 4 };
+const TIE_POINTS = 1;   // any of your four teams playing to a tie
 const PLAYERS = [
   { name: "Steve", good: "WSH", bad: "ARI", love: "DEN", loathe: "DAL" },
   { name: "Anne",  good: "PIT", bad: "CLE", love: "DEN", loathe: "LV"  },
@@ -233,7 +234,8 @@ function simplify(e) {
 
 // Points a player earns from one team's result
 function pointsFor(kind, res) {
-  if (!res || res === "T") return 0;
+  if (!res) return 0;
+  if (res === "T") return TIE_POINTS;
   return (res === "W") === WANTS_WIN[kind] ? POINTS[kind] : 0;
 }
 
@@ -374,7 +376,7 @@ function renderWeek() {
         }
         if (stake) {
           const cls = g.final ? (earned ? "scored" : "missed") : "";
-          tags.push(`<span class="tag ${cls}">${p.name} +${stake}</span>`);
+          tags.push(`<span class="tag ${cls}">${p.name} +${g.final && earned && earned < stake ? earned : stake}</span>`);
         }
       }
       return `<div class="row"><span class="lbl">Rooting for ${t.name}</span>${tags.length ? tags.join("") : '<span class="none">Nobody</span>'}</div>`;
